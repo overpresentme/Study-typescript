@@ -36,8 +36,14 @@ gulp.task('copy-html', function () {
         .pipe(gulp.dest('dist'));
 });
 
+
+
 function bundle() {
     return watchedBrowserify
+        .transform('babelify', {
+            presets: ['es2015'],
+            extensions: ['.ts']
+        })
         .bundle()
         .on('error', fancy_log)
         .pipe(source('bundle.js'))
