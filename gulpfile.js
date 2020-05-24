@@ -16,6 +16,9 @@ var source = require('vinyl-source-stream');
 var tsify = require('tsify');
 var watchify = require('watchify');
 var fancy_log = require('fancy-log');
+var uglify = require('gulp-uglify');
+var sourcemaps = require('gulp-sourcemaps');
+var buffer = require('vinyl-buffer');
 var paths = {
     pages: ['src/*.html']
 };
@@ -38,6 +41,10 @@ function bundle() {
         .bundle()
         .on('error', fancy_log)
         .pipe(source('bundle.js'))
+        .pipe(buffer())
+        .pipe(sourcemaps.init({loadMaps: true}))
+        .pipe(uglify())
+        .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest('dist'));
 }
 
