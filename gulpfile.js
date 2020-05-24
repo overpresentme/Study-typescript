@@ -14,9 +14,18 @@ gulp.task("default", function () {
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var tsify = require('tsify');
+var watchify = require('watchify');
+var fancy_log = require('fancy-log');
 var paths = {
     pages: ['src/*.html']
 };
+var watchedBrowserify = watchify(browserify({
+    basedir: '.',
+    debug: true,    // 브라우저에서 ts파일 디버깅 가능.
+    entries: ['src/main.ts'],
+    cache: {},
+    packageCache: {}
+}).plugin(tsify));
 
 // src/*.html -> 복사 -> dist/*.html
 gulp.task('copy-html', function () {
@@ -24,16 +33,15 @@ gulp.task('copy-html', function () {
         .pipe(gulp.dest('dist'));
 });
 
-gulp.task('default', gulp.series(gulp.parallel('copy-html'), function () {  // 'default' 실행 전 'copy-html'을 실행
-    return browserify({
-        basedir: '.',
-        debug: true,    // 브라우저에서 ts파일 디버깅 가능.
-        entries: ['src/main.ts'],
-        cache: {},
-        packageCache: {}
-    })
-    .plugin(tsify)
-    .bundle()
-    .pipe(source('bundle.js'))
-    .pipe(gulp.dest('dist'));
-}));
+function bundle() {
+    return watchedBrowserify
+        .bundle()
+        .on('error', fancy_log)
+        .pipe(source('bundle.js'))
+        .pipe(gulp.dest('dist'));
+}
+
+gulp.task('default', gulp.series(gulp.parallel('copy-html'), bundle)); // 'default' 실행 전 'copy-html'을 실행
+watchedBrowserify.on('update', bundle); // typescript 파일 변경마다 bundle함수 실행.
+watchedBrowserify.on('log', fancy_log); // 콘솔 기록.
+

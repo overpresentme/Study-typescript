@@ -4,5 +4,5 @@ interface Person {
 }
 
 export function greeter(person: Person) {
-    return `Hello, ww ${person.firstName} ${person.lastName}`;
+    return `Hello, 22ww ${person.firstName} ${person.lastName}`;
 }
